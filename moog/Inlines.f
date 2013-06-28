@@ -12,8 +12,10 @@ c******************************************************************************
       include 'Pstuff.com'
       include 'Quants.com'
       include 'Factor.com'
-      real*8        swave1(40), satom1(40), se(40),sgf(40),
-     .              sdampnum(40),sd0(40),swidth(40), scharge(40)
+      include 'Stokes.com'
+      real*8     swave1(400), satom1(400), se(400),sgf(400),
+     .           sdampnum(400),sd0(400),swidth(400), scharge(400),
+     .           sdeltamj(400), scrad(400), sc4(400)
       integer n1, n2
       data n1,n2 /1,0/
 
@@ -79,13 +81,23 @@ c*****read in the strong lines if needed
 302   nstrong = 0
       if (dostrong .gt. 0 ) then
          rewind nfslines
-         do j=1,41
+         do j=1,401
             if (linfileopt .eq. 0) then
                read (nfslines,1002,end=340) swave1(j),satom1(j),se(j),
      .                             sgf(j),sdampnum(j),sd0(j),swidth(j)
-            else
+               sdeltamj(j) = 0.0
+               scrad(j) = 0.0
+               sc4(j) = 0.0
+            elseif (linfileopt .eq. 1) then
                read (nfslines,*,end=340) swave1(j),satom1(j),se(j),
      .                             sgf(j),sdampnum(j),sd0(j),swidth(j)
+               sdeltamj(j) = 0.0
+               scrad(j) = 0.0
+               sc4(j) = 0.0
+            elseif (linfileopt .eq. 2) then
+               read (nfslines,1016,end=340) swave1(j),satom1(j),se(j),
+     .            sgf(j),sdampnum(j),sd0(j),swidth(j),sdeltamj(j),
+     .            scrad(j),sc4(j)
             endif
             nstrong = nstrong + 1
             iatom = satom1(j)
@@ -96,8 +108,8 @@ c*****read in the strong lines if needed
                stop
             endif
          enddo
-         if (nstrong .gt. 40) then
-            write(*,*) 'STRONG LINE LIST HAS MORE THAN 40 LINES. THIS'
+         if (nstrong .gt. 400) then
+            write(*,*) 'STRONG LINE LIST HAS MORE THAN 400 LINES. THIS'
             write(*,*) 'IS NOT ALLOWED. I QUIT!'
             stop
          endif
@@ -108,9 +120,18 @@ c*****read in the strong lines if needed
 333   if (linfileopt .eq. 0) then
          read (nflines,1002,end=311) wave1(j),atom1(j),e(j,1),gf(j),
      .                             dampnum(j),d0(j),width(j)
-      else
+         deltamj(j) = 0.0
+         crad(j) = 0.0
+         c4(j) = 0.0
+      elseif (linfileopt .eq. 1) then
          read (nflines,*,end=311) wave1(j),atom1(j),e(j,1),gf(j),
      .                             dampnum(j),d0(j),width(j)
+         deltamj(j) = 0.0
+         crad(j) = 0.0
+         c4(j) = 0.0
+      elseif (linfileopt .eq. 2) then
+         read (nflines,1016,end=311) wave1(j),atom1(j),e(j,1),gf(j),
+     .          dampnum(j),d0(j),width(j),deltamj(j),crad(j),c4(j)
       endif
       iatom = atom1(j)
       charge(j) = 1.0 + dble(int(10.0*(atom1(j) - iatom)+0.0001))
@@ -136,6 +157,9 @@ c*****append the strong lines here if necessary
             d0(nlines+k) = sd0(k)
             width(nlines+k) = swidth(k)
             charge(nlines+k) = scharge(k)
+            deltamj(nlines+k) = sdeltamj(k)
+            crad(nlines+k) = scrad(k)
+            c4(nlines+k) = sc4(k)
          enddo
       endif
 
@@ -290,6 +314,7 @@ c*****format statements
 1013  format (f6.1, ' IS AN UNKOWN MOLECULE; I QUIT!')
 1014  format ('Isotopic Ratios given for this synthesis')
 1015  format ('Isotopic Ratio: [', i4, '/', f10.5, '] = ', f10.3)
+1016  format (10e10.3)
       
 
       end

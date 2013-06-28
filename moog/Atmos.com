@@ -24,7 +24,7 @@ c******************************************************************************
       character*80 f1out, f2out, f3out, f4out, f5out, f6out,
      .             f7out, f8out, f9out, f10out,
      .             fparam, fmodel, flines, fslines, fobs, ftable,
-     .             fbarklem, fbarklemUV
+     .             fbarklem, fbarklemUV, AtmosDir, OutDir
       character*60 moogpath
       character*2  names(95)
       character*10 modtype
@@ -52,7 +52,7 @@ c******************************************************************************
       common/charstuff/ f1out, f2out, f3out, f4out, f5out, f6out,
      .                  f7out, f8out, f9out, f10out,
      .                  fparam, fmodel, flines, fslines, fobs, ftable,
-     .                  fbarklem, fbarklemUV,
+     .                  fbarklem, fbarklemUV, AtmosDir, OutDir,
      .                  moogpath,
      .                  names,
      .                  modtype,

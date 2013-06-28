@@ -25,9 +25,9 @@ if 'install' in sys.argv:
         sys.exit()
 
 
-    if os.getuid() != 0:
-        sys.stderr.write("Permission denied: Sudo access is required!\n")
-        sys.exit()
+    #if os.getuid() != 0:
+    #    sys.stderr.write("Permission denied: Sudo access is required!\n")
+    #    sys.exit()
 
     # We are sudo; with great power comes great responsibility.
 
@@ -36,7 +36,8 @@ if 'install' in sys.argv:
 
     # Which system are we on?
     if platform == 'Darwin':
-        run_make_files = ('Makefile.mac', 'Makefile.macsilent')
+        run_make_files = ('Makefile.MoogStokesMac',
+                'Makefile.MoogStokesMacsilent')
         machine = 'mac'
 
     elif platform == 'Linux':
@@ -45,10 +46,12 @@ if 'install' in sys.argv:
         is_64bits = sys.maxsize > 2**32
 
         if is_64bits:
-            run_make_files = ('Makefile.rh64', 'Makefile.rh64silent')
+            run_make_files = ('Makefile.MoogStokes64', 
+                    'Makefile.MoogStokes64silent')
 
         else:
-            run_make_files = ('Makefile.rh', 'Makefile.rhsilent')
+            run_make_files = ('Makefile.MoogStokes', 
+                    'Makefile.MoogStokessilent')
 
 
     # Check for gfortran or g77
@@ -65,7 +68,7 @@ if 'install' in sys.argv:
     if gfortran_exists:
 
         if is_64bits:
-            fortran_vars = "FC = gfortran -m64\nFFLAGS = -Wall -O4 -ffixed-line-length-72 -ff2c"
+            fortran_vars = "FC = gfortran -m64\nFFLAGS = -Wall -O4 -ffixed-line-length-72 -ff2c -fsecond-underscore"
 
         else:
             fortran_vars = "FC = gfortran\nFFLAGS = -Wall -O4 -ffixed-line-length-72 -ff2c"
@@ -96,13 +99,15 @@ if 'install' in sys.argv:
     [copy(data_file, '%s/%s' % (data_dir, os.path.basename(data_file), )) for data_file in data_files]
     
     aqlib = "AQLIB = %s" % os.path.join(repository_dir, 'lib/aqlib')
-    smlib = "SMLIB = %s" % os.path.join(repository_dir, 'lib/smlib')
+    smlib = "SMLIB = %s" % os.path.join(repository_dir, 'lib/smlib_B')
+    atlaslib = "ATLASLIB = %s" % os.path.join(repository_dir, 'lib/atlaslib')
+    lapacklib = "LAPACKLIB = %s" % os.path.join(repository_dir, 'lib/lapacklib')
 
-    configuration = "\n".join([fortran_vars, aqlib, smlib])
+    configuration = "\n".join([fortran_vars, aqlib, smlib, atlaslib, lapacklib])
 
-    # Update the makefiles with the proper SMLIB and AQLIB
+    # Update the makefiles with the proper SMLIB, AQLIB, ATLASLIB, and LAPACKLIB
     run_make_files = [os.path.join(repository_dir, 'moog', filename) for filename in run_make_files]
-    hardcoded_moog_files = [os.path.join(repository_dir, 'moog', filename) for filename in ('Begin.f', 'Moog.f', 'Moogsilent.f')]
+    hardcoded_moog_files = [os.path.join(repository_dir, 'moog', filename) for filename in ('Begin.f', 'MoogStokes.f', 'MoogStokessilent.f')]
 
     # Setup: Move and create copies of the original
     for make_file in run_make_files:
@@ -176,5 +181,5 @@ setup(
         'Topic :: Scientific/Engineering :: Astronomy',
         'Topic :: Scientific/Engineering :: Physics',
     ],
-    scripts=['moog/MOOG', 'moog/MOOGSILENT'],
+    scripts=['moog/MoogStokes', 'moog/MoogStokessilent'],
     )

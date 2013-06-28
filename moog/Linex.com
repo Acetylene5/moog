@@ -9,6 +9,7 @@ c     so leave them alone or suffer unspeakable programming tortures.
 c******************************************************************************
 
       real*8       a(2500,100), dopp(2500,100), kapnu0(2500,100)
+      real*8       deltamj(2500),crad(2500),c4(2500)
       real*8       gf(2500), wave1(2500), atom1(2500), e(2500,2),
      .             chi(2500,3), amass(2500), charge(2500), d0(2500),
      .             dampnum(2500), gf1(2500), width(2500), 
@@ -22,13 +23,14 @@ c******************************************************************************
      .             oldstart, oldstop, oldstep, olddelta
       real*8       rwlow, rwhigh, rwstep, wavestep, cogatom,
      .             delwave, wave, waveold, st1
-      real*8       gammatot, gammav, gammas, gammar
+      real*8       gammatot, gammav, gammas, gammar, viewang
       integer      lim1, lim2, mode, ndepths, ncurve, nlines,nstrong,
      .             lim1line, lim2line, ntabtot, group(2500),
      .             iabatom, iaa, ibb, molflag, dostrong, gfstyle
       character*7  damptype(2500)
 
       common/linex/a, dopp, kapnu0,   
+     .             deltamj, crad, c4,
      .             gf, wave1, atom1, e,
      .             chi, amass, charge, d0,
      .             dampnum, gf1, width, 
@@ -42,7 +44,7 @@ c******************************************************************************
      .             oldstart, oldstop, oldstep, olddelta,
      .             rwlow, rwhigh, rwstep, wavestep, cogatom,
      .             delwave, wave, waveold, st1,
-     .             gammatot, gammav, gammas, gammar,
+     .             gammatot, gammav, gammas, gammar, viewang,
      .             lim1, lim2, mode, ndepths, ncurve, nlines,nstrong, 
      .             lim1line, iaa, ibb, lim2line, ntabtot, group,
      .             iabatom, molflag, dostrong, gfstyle

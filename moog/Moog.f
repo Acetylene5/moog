@@ -21,6 +21,7 @@ c     generate a reminder of this necessity
       moogpath = 
      .  '$SRCDIR'
 
+
 c*****What kind of machine are you using?  Possible ones are:
 c     "mac" = Intel-based Apple Mac 
 c     "pcl" = a PC or desktop running some standard linux like Redhat

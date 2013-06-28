@@ -12,10 +12,12 @@ c******************************************************************************
       include 'Obspars.com'
       include 'Mol.com'
       include 'Multistar.com'
-      real*8 deltalogab(5)
-      character keyword*20
-      character arrayz*80
-      integer kk
+      include 'Angles.com'
+      include 'Stokes.com'
+      real*8 deltalogab(5), temp
+      character keyword*20, sandbox*80
+      character arrayz*80, stokes_base*80
+      integer kk, outflag, atmosflag
       data newcount, linecount /0, 0/
 
 
@@ -68,6 +70,12 @@ c                    to be used for some other purpose as needed`
       f8out =   'no_filename_given'
       f9out =   'no_filename_given'
       f10out =  'no_filename_given'
+      fAngles = 'Stokes.angles'
+      fStokesI = 'Stokes.spectrum_I'
+      fStokesQ = 'Stokes.spectrum_Q'
+      fStokesU = 'Stokes.spectrum_U'
+      fStokesV = 'Stokes.spectrum_V'
+      fContinuum = 'Stokes.spectrum_continuum'
       nf1out =   0
       nf2out =   0
       nf3out =   0
@@ -79,6 +87,15 @@ c                    to be used for some other purpose as needed`
       nf9out =   0
       nf10out =  0
       modelnum = 0
+      nfAngles = 0
+      nfStokesI = 0
+      nfStokesQ = 0
+      nfStokesU = 0
+      nfStokesV = 0
+      nfContinuum = 0
+      modelnum = 0
+      outflag = 0
+      atmosflag = 0
 
 
 c  INITIALIZE SOME VARIABLES: input file names and input file numbers
@@ -161,6 +178,21 @@ c  INITIALIZE SOME VARIABLES: spectroscopic binary parameters
       deltaradvel = 0.
       lumratio = 1.
 
+c  INITIALIZE SOME VARIABLES: MOOGStokes specific stellar geometry
+      inclination = 3.1415926/2.0
+      position_angle = 0.0
+      diskflag = 1             ! 1 => annuli, 0 => disco-ball
+      ncells = 695
+      nrings = 23
+
+c  INITIALIZE SOME VARIABLES: MOOGStokes test flag
+      testflag = 0
+
+c  INITIALIZE SOME VARIABLE: WaveGrid parameters
+      beta_strong = 5.0
+      beta_weak = 7.0
+      R_strong = 0.5
+      R_weak = 0.25
 
 c  INITIALIZE SOME VARIABLES: elements with special abundance data; for
 c  practical reasons, keyword "abundances" and "isotopes" must be specified
@@ -226,6 +258,9 @@ c  the default value, then the old-style formatted input will be used;
 c  If freeform = 1, unformatted read will be used, BUT the user must then
 c  give values for all quantities (that is, explicit zeros will need to
 c  be put instead of blank spaces.
+c     MOOGStokes Modification - If freeform = 2, then Inlines will
+c      expect 100 character lines in the linelist (delta_mj,
+c      radiative_damping_coeff, C4_coefficient)
       if     (keyword .eq. 'freeform') then
          read (array,*) linfileopt
  
@@ -275,7 +310,85 @@ c  created previously, that will be read in for plotting purposes
 c  keyword 'smoothed_out' controls the name of the smoothed synthesis output
       elseif (keyword .eq. 'smoothed_out') then
          read (array,*) f3out
+c         sandbox = trim(OutDir)//trim(stokes_base)
+c         f3out = trim(sandbox)//'.moog'
 
+c  keyword 'atmos_dir' specifies the location of the model atmosphere'
+      elseif (keyword .eq. 'atmos_dir') then
+         read (array,*) sandbox
+         AtmosDir = trim(sandbox)
+         atmosflag = 1
+
+c  keyword 'out_dir' specifies the location of the model atmosphere'
+      elseif (keyword .eq. 'out_dir') then
+         read (array,*) sandbox
+         OutDir = trim(sandbox)
+         outflag = 1
+
+c  keyword 'stokes_out' controls the base name of all the Stokes-related output
+      elseif (keyword .eq. 'stokes_out') then
+         read (array,*) stokes_base
+         if (outflag .eq. 1) then
+             sandbox = trim(OutDir)//trim(stokes_base)
+         else
+             sandbox = trim(stokes_base)
+         endif
+         fAngles = trim(sandbox)//'.angles'
+         fStokesI = trim(sandbox)//'.spectrum_I'
+         fStokesQ = trim(sandbox)//'.spectrum_Q'
+         fStokesU = trim(sandbox)//'.spectrum_U'
+         fStokesV = trim(sandbox)//'.spectrum_V'
+         fContinuum = trim(sandbox)//'.continuum'
+
+c  keyword 'nrings' controls the number of latitude belts to synthesize in the
+c        discoball (diskflag = 0)
+      elseif (keyword .eq. 'nrings') then
+         read (array,*) nrings
+
+c  keyword 'ncells' controls the number of cells to synthesize in the
+c        discoball (diskflag = 0)
+      elseif (keyword .eq. 'ncells') then
+         read (array,*) ncells
+
+c  keyword 'inclination' controls the inclination of the stellar
+c          rotation axis
+      elseif (keyword .eq. 'inclination') then
+         read (array,*) inclination
+
+c  keyword 'pos_ang' controls the position angle of the stellar rotation
+      elseif (keyword .eq. 'pos_ang') then
+         read (array,*) position_angle
+
+c  keyword 'diskflag' controls whether MOOGStokes calculates annuli (1) or a
+c         disco-ball (0)
+      elseif (keyword .eq. 'diskflag') then
+         read (array,*) diskflag
+
+c  keyword 'testflag' controls whether MOOGStokes calculates full disk
+c         spectrum (0) or just a single pencil beam (1)
+      elseif (keyword .eq. 'testflag') then
+         read (array,*) testflag
+
+c  keyword 'beta_strong' controls wavelength stepsize around strong lines
+      elseif (keyword .eq. 'beta_strong') then
+         read (array,*) beta_strong
+
+c  keyword 'R_strong' controls wavelength stepsize around strong lines
+      elseif (keyword .eq. 'R_strong') then
+         read (array,*) R_strong
+
+c  keyword 'beta_weak' controls wavelength stepsize around weak lines
+      elseif (keyword .eq. 'beta_weak') then
+         read (array,*) beta_weak
+
+c  keyword 'R_weak' controls wavelength stepsize around weak lines
+      elseif (keyword .eq. 'R_weak') then
+         read (array,*) R_weak
+
+c  keyword 'viewang' controls the viewing angle (measured in Degrees)
+      elseif (keyword .eq. 'viewang') then
+         read (array,*) temp 
+         viewang = dble(3.14159262/180.0)*temp
 
 c  keyword 'keeplines_out' controls the name of the list of kept lines
 c  for future synthetic spectrum runs
@@ -297,6 +410,12 @@ c  keyword 'iraf_out' controls the name of the optional IRAF output
 c  keyword 'model_in' controls the name of input model atmosphere file
       elseif (keyword .eq. 'model_in') then
          read (array,*) fmodel
+         if (atmosflag .eq. 1) then
+             sandbox = trim(AtmosDir)//trim(fmodel)
+         else
+             sandbox = trim(fmodel)
+         endif
+         fmodel = sandbox
 
 
 c  keyword 'lines_in' controls the name of the input line list
@@ -705,7 +824,8 @@ c  loop back to get another parameter
 
 c  wrap things up with a few assignments
 98    if (control .eq. 'gridsyn' .or. control .eq. 'gridplo' .or.
-     .    control .eq. 'binary ' .or. control .eq. 'abandy ') then
+     .    control .eq. 'binary ' .or. control .eq. 'abandy ' .or.
+     .    control .eq. 'gridsto') then
          control = 'gridend'
       endif
 

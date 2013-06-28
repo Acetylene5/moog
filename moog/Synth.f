@@ -12,6 +12,7 @@ c******************************************************************************
       include 'Linex.com'
       include 'Pstuff.com'
       include 'Dummy.com'
+      include 'Stokes.com'
 
 
 c*****examine the parameter file
